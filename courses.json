@@ -1,0 +1,14 @@
+[
+    { "title": "Introduction to Python", "description": "Learn the fundamentals of Python, one of the most popular programming languages.", "link": "#", "price": "free", "type": "pl", "level": "beginner" },
+    { "title": "Advanced JavaScript", "description": "Dive deep into JavaScript concepts like closures, promises, and async/await.", "link": "#", "price": "paid", "type": "pl", "level": "intermediate" },
+    { "title": "Cybersecurity Essentials", "description": "Understand the basics of cybersecurity and how to protect systems from threats.", "link": "#", "price": "paid", "type": "field", "level": "beginner" },
+    { "title": "Machine Learning A-Z", "description": "A comprehensive course on machine learning, from basic algorithms to deep learning.", "link": "#", "price": "paid", "type": "field", "level": "professional" },
+    { "title": "Conversational English", "description": "Improve your spoken English skills for everyday and professional conversations.", "link": "#", "price": "free", "type": "hl", "level": "intermediate" },
+    { "title": "C++ for Game Development", "description": "Learn C++ by building your own games from scratch with this hands-on course.", "link": "#", "price": "paid", "type": "pl", "level": "intermediate" },
+    { "title": "Introduction to AI", "description": "Explore the world of Artificial Intelligence and its applications in the real world.", "link": "#", "price": "free", "type": "field", "level": "beginner" },
+    { "title": "French for Beginners", "description": "Start your journey to learning French with this easy-to-follow introductory course.", "link": "#", "price": "free", "type": "hl", "level": "beginner" },
+    { "title": "Data Structures & Algorithms", "description": "Master essential data structures and algorithms for technical interviews.", "link": "#", "price": "paid", "type": "field", "level": "professional" },
+    { "title": "Advanced Spanish Grammar", "description": "Perfect your Spanish grammar and speak with more confidence and accuracy.", "link": "#", "price": "paid", "type": "hl", "level": "professional" },
+    { "title": "React - The Complete Guide", "description": "Build powerful and fast web applications with React, the popular JavaScript library.", "link": "#", "price": "paid", "type": "pl", "level": "intermediate" },
+    { "title": "Cloud Computing with AWS", "description": "Learn to deploy and manage applications on Amazon Web Services (AWS).", "link": "#", "price": "paid", "type": "field", "level": "intermediate" }
+]

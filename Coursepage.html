@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Courses</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* --- THEME STYLES FROM HOMEPAGE --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #e0e0e0;
+            overflow-x: hidden; /* Allow vertical scrolling */
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .pyramid-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            perspective: 1000px;
+            z-index: -1; /* Place behind content */
+        }
+        .pyramid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, #05050a 80%);
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+        }
+        .spotlight {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.15) 0%, rgba(0,0,0,0) 60%);
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 1; /* Keep content above the background */
+        }
+        .main-title {
+            font-family: 'Cinzel', serif;
+            text-shadow: 0 0 8px #d4af37, 0 0 15px #d4af37;
+        }
+
+        /* --- UPDATED: Existing styles to match the new theme --- */
+        .filter-btn {
+            transition: all 0.3s ease;
+            border: 1px solid #4a5568;
+        }
+        .filter-btn:hover {
+            background-color: #d4af37;
+            border-color: #d4af37;
+            color: #000;
+        }
+        .filter-btn.active {
+            background-color: #d4af37;
+            border-color: #d4af37;
+            color: #000;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+        }
+
+        .course-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .course-card:hover {
+            transform: translateY(-10px);
+            border-color: #d4af37;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+        .course-card:hover::before {
+            left: 100%;
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <canvas id="particle-canvas"></canvas>
+    <div class="pyramid-container">
+        <div class="pyramid"></div>
+        <div class="spotlight"></div>
+    </div>
+
+    <div class="content-wrapper p-4 sm:p-6 md:p-8">
+        <div class="container mx-auto">
+            <h1 class="main-title text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-500">Course Catalog</h1>
+            <p class="text-center mb-8 text-gray-400">Use the filters below to find the perfect course for you.</p>
+
+            <div id="filters" class="mb-10 p-6 bg-slate-900/50 rounded-xl border border-slate-800">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    <div>
+                        <h3 class="font-semibold mb-3 text-lg text-yellow-300">General</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-btn active px-4 py-2 rounded-lg" data-filter-group="all" data-filter="all">All</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-3 text-lg text-yellow-300">Price</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-btn px-4 py-2 rounded-lg" data-filter-group="price" data-filter="free">Free</button>
+                            <button class="filter-btn px-4 py-2 rounded-lg" data-filter-group="price" data-filter="paid">Paid</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-3 text-lg text-yellow-300">Category</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-btn px-4 py-2 rounded-lg" data-filter-group="type" data-filter="field">Programming Fields</button>
+                            <button class="filter-btn px-4 py-2 rounded-lg" data-filter-group="type" data-filter="pl">Programming Languages</button>
+                            <button class="filter-btn px-4 py-2 rounded-lg" data-filter-group="type" data-filter="hl">Human Languages</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-3 text-lg text-yellow-300">Level</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-btn px-4 py-2 rounded-lg" data-filter-group="level" data-filter="beginner">Beginner</button>
+                            <button class="filter-btn px-4 py-2 rounded-lg" data-filter-group="level" data-filter="intermediate">Intermediate</button>
+                            <button class="filter-btn px-4 py-2 rounded-lg" data-filter-group="level" data-filter="advanced">Advanced</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="course-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Course cards will be injected here by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // --- DATA ---
+        const courses = [
+            // German Courses
+            { title: 'Alison – German for Beginners', description: 'Learn the basics of German including alphabet, greetings, colors, and numbers.', link: 'https://alison.com/course/german-for-beginners', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'The German Project – Interactive Lessons', description: 'Fun lessons with audio to learn basic greetings, verbs, and simple grammar.', link: 'https://www.thegermanproject.com/german-lessons', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'DeutschAkademie – Free Interactive Course', description: 'Over 25,000 interactive exercises covering levels A1 to C1.', link: 'https://www.deutschakademie.com/online-deutschkurs/english', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'OpenLearn – Understanding Spoken German', description: 'Improve listening skills through realistic video clips from Open University.', link: 'https://www.open.edu/openlearn/languages/intermediate-german-understanding-spoken-german/content-section-0', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'DeutschAkademie – Intermediate Exercises', description: 'Interactive grammar and vocabulary exercises for intermediate learners.', link: 'https://www.deutschakademie.com/online-deutschkurs/english', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Memrise – Learn with Videos', description: 'Uses videos of real people to teach language in an interactive way.', link: 'https://www.memrise.com/', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'OpenLearn – German Language, Culture & History', description: 'Advanced course covering linguistic, cultural, and historical aspects of German.', link: 'https://www.classcentral.com/course/openlearn-languages-german-advanced-german-language-culture-and-history-95335', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Babbel – German for Beginners', description: 'Short lessons focused on daily conversations with voice recognition technology.', link: 'https://www.the-sun.com/shopping/14133397/babbel-lifetime-subscription-sale/', price: 'paid', priceDisplay: '$129.99', type: 'hl', level: 'beginner' },
+            { title: 'Rosetta Stone – Lifetime Subscription', description: 'Well-known platform offering interactive lessons suitable for all levels.', link: 'https://nypost.com/2025/06/10/shopping/rosetta-stone-lifetime-subscription-all-languages-is-54-off-3/', price: 'paid', priceDisplay: '$179.99', type: 'hl', level: 'beginner' },
+            { title: 'Pimsleur – Interactive Audio Courses', description: 'Audio-based program focusing on speaking and listening for beginners.', link: 'https://www.pimsleur.com/', price: 'paid', type: 'hl', level: 'beginner' },
+            { title: 'Babbel – Intermediate German', description: 'Interactive lessons to improve language and communication skills.', link: 'https://www.the-sun.com/shopping/14133397/babbel-lifetime-subscription-sale/', price: 'paid', priceDisplay: '$129.99', type: 'hl', level: 'intermediate' },
+            { title: 'Babbel – Advanced German', description: 'Advanced lessons focusing on enhancing fluency and communication skills.', link: 'https://www.the-sun.com/shopping/14133397/babbel-lifetime-subscription-sale/', price: 'paid', priceDisplay: '$129.99', type: 'hl', level: 'advanced' },
+
+            // Spanish Courses
+            { title: 'Duolingo – Learn Spanish for Free', description: 'Interactive platform with short, fun lessons for basic vocabulary and grammar.', link: 'https://www.duolingo.com/course/es/en/Learn-Spanish', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'StudySpanishLanguage.org – Beginner Course', description: 'Free program with 4 topics and 12 lessons with audio exercises.', link: 'https://www.studyspanishlanguage.org/', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Languages 247 – Beginner Lessons', description: '60 lessons covering reading, vocabulary, grammar, and speaking.', link: 'https://www.languages247.com/spanish/', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'OpenLearn – Understanding Spoken Spanish', description: 'Improve listening skills with realistic video clips from Open University.', link: 'https://www.open.edu/openlearn/languages/intermediate-spanish-understanding-spoken-spanish/content-section-overview', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'OpenLearn – Spanish Language in Context', description: 'Advanced course covering linguistic, cultural, and historical aspects.', link: 'https://www.open.edu/openlearn/languages/spanish/advanced-spanish-language-context/content-section-0/', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Babbel – Spanish for Beginners', description: 'Short lessons for daily conversations with voice recognition technology.', link: 'https://www.the-sun.com/shopping/14133397/babbel-lifetime-subscription-sale/', price: 'paid', priceDisplay: '$129.99', type: 'hl', level: 'beginner' },
+            { title: 'Rosetta Stone – Spanish Lifetime Subscription', description: 'Interactive lessons with voice recognition, suitable for all levels.', link: 'https://nypost.com/2025/06/10/shopping/rosetta-stone-lifetime-subscription-all-languages-is-54-off-3/', price: 'paid', priceDisplay: '$179.99', type: 'hl', level: 'beginner' },
+            { title: 'Pimsleur – Spanish Audio Courses', description: 'Audio program focusing on speaking and listening skills for beginners.', link: 'https://www.pimsleur.com/', price: 'paid', type: 'hl', level: 'beginner' },
+            { title: 'Babbel – Intermediate Spanish', description: 'Interactive lessons to enhance language and communication skills.', link: 'https://www.the-sun.com/shopping/14133397/babbel-lifetime-subscription-sale/', price: 'paid', priceDisplay: '$129.99', type: 'hl', level: 'intermediate' },
+            { title: 'Babbel – Advanced Spanish', description: 'Advanced lessons focused on improving fluency and communication.', link: 'https://www.the-sun.com/shopping/14133397/babbel-lifetime-subscription-sale/', price: 'paid', priceDisplay: '$129.99', type: 'hl', level: 'advanced' },
+            
+            // Italian Courses
+            { title: 'Alison – Italian for Beginners', description: 'Free course covering the basics of Italian, like greetings and numbers.', link: 'https://alison.com/course/italian-for-beginners', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Larning Box – Free Italian Course', description: 'Focuses on correct pronunciation, basic grammar, and daily vocabulary.', link: 'https://www.larningbox.com/courses/educational_courses/free-italian-language-course/', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Italian Virtual School – Free Video Course', description: 'Free video course covering pronunciation and basic grammar for beginners.', link: 'https://learn-italian-online.italianvirtualschool.it/en/free-italian-video-course-for-beginners/', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Alison – Intermediate Italian Studies', description: 'Deepens grammar and vocabulary, with a focus on Italian culture.', link: 'https://alison.com/course/italian-language-studies-intermediate', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Udemy – Free Italian Intermediate Course', description: 'Focuses on Italian cooking vocabulary and grammar with interactive exercises.', link: 'https://www.udemy.com/course/italian-course-for-intermediate-level-italiano-in-cucina/', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Wellesley College – Intermediate Italian', description: 'Free course via edX, covering vocabulary and grammar for intermediates.', link: 'https://www1.wellesley.edu/italianonline', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Alison – Advanced Italian Studies', description: 'Covers complex texts and practical exercises to enhance fluency.', link: 'https://alison.com/course/italian-language-studies-advanced', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Cursa – Italian C1 Advanced', description: 'Focuses on advanced grammar, conversation, and Italian literature.', link: 'https://cursa.app/en/free-online-courses/italian-c1-advanced', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Babbel – Italian for Beginners', description: 'Short interactive lessons focusing on daily conversations.', link: 'https://www.the-sun.com/shopping/14133397/babbel-lifetime-subscription-sale/', price: 'paid', priceDisplay: '$129.99', type: 'hl', level: 'beginner' },
+            { title: 'Rosetta Stone – Italian for Beginners', description: 'Interactive lessons with voice recognition, great for beginners.', link: 'https://nypost.com/2024/08/07/shopping/a-rosetta-stone-lifetime-subscription-is-52-off/', price: 'paid', priceDisplay: '$189.99', type: 'hl', level: 'beginner' },
+            { title: 'Pimsleur – Italian Level 1', description: 'Audio-based program focusing on speaking and listening.', link: 'https://www.pimsleur.com/', price: 'paid', type: 'hl', level: 'beginner' },
+
+            // French Courses
+            { title: 'TV5Monde – Apprendre le français A1', description: 'Interactive course with over 500 exercises, including videos and vocabulary.', link: 'https://apprendre.tv5monde.com/fr/niveaux/a1-debutant', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'BBC Languages – Talk French', description: 'A 12-unit video course with word games and worksheets.', link: 'http://www.bbc.co.uk/languages/french/talk/', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Duolingo – French', description: 'Popular app with short, interactive lessons for pronunciation and reading.', link: 'https://www.duolingo.com/course/fr/en/Learn-French', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'OpenLearn – Intermediate French', description: 'Improve listening skills with realistic video clips from Open University.', link: 'https://www.open.edu/openlearn/languages/intermediate-french-understanding-spoken-french/content-section-0', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Memrise – French Intermediate', description: 'Interactive lessons based on short videos of native speakers.', link: 'https://www.memrise.com/course/2021576/french-2/', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Coursera – French Courses', description: 'Advanced courses on various topics like history and science.', link: 'https://www.coursera.org/courses?query=french', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Babbel – French for Beginners', description: 'Short lessons on daily conversations with voice recognition technology.', link: 'https://www.the-sun.com/shopping/14133397/babbel-lifetime-subscription-sale/', price: 'paid', priceDisplay: '$129.99', type: 'hl', level: 'beginner' },
+            { title: 'Rosetta Stone – French for Beginners', description: 'Interactive lessons with voice recognition, perfect for beginners.', link: 'https://nypost.com/2025/06/10/shopping/rosetta-stone-lifetime-subscription-all-languages-is-54-off-3/', price: 'paid', priceDisplay: '$179.99', type: 'hl', level: 'beginner' },
+
+            // Turkish Courses
+            { title: 'Alison – Turkish for Beginners', description: 'Free course covering Turkish basics like alphabet, pronunciation, and greetings.', link: 'https://alison.com/course/turkish-for-beginners', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'TurkishClass101 – Absolute Beginner', description: 'Short audio lessons with translations and explanations for beginners.', link: 'https://www.turkishclass101.com/free-pathway/', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Turkish Online – Hands On Turkish (A2)', description: 'Covers a wide range of topics, vocabulary, grammar, and culture.', link: 'https://turkishonline.eu/first-steps-turkish/', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Preply – Advanced Turkish Course', description: 'Individual lessons with professional teachers on advanced topics.', link: 'https://preply.com/en/courses/turkish/advanced-turkish-course', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Preply – Beginner Turkish Course', description: 'Individual lessons focusing on basic vocabulary, grammar, and conversation.', link: 'https://preply.com/en/courses/turkish/beginner-turkish-course', price: 'paid', type: 'hl', level: 'beginner' },
+            { title: 'Pimsleur – Turkish Level 1', description: 'Audio-based program focused on speaking and listening skills.', link: 'https://www.pimsleur.com/', price: 'paid', type: 'hl', level: 'beginner' },
+
+            // Korean Courses
+            { title: 'Talk To Me In Korean (TTMIK) – Level 1', description: 'A very popular course for beginners covering the basics of the language.', link: 'https://talktomeinkorean.com/curriculum/level-1', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Duolingo Korean Course', description: 'A free app to learn Korean from scratch in a fun, interactive way.', link: 'https://www.duolingo.com/course/ko/en/Learn-Korean', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Coursera – Korean Intermediate', description: 'A good course covering grammar, vocabulary, and conversations.', link: 'https://www.coursera.org/learn/learn-korean', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Rosetta Stone Korean', description: 'A comprehensive, interactive course with advanced pronunciation technology.', link: 'https://www.rosettastone.com/learn-korean/', price: 'paid', type: 'hl', level: 'beginner' },
+            { title: 'Udemy – Korean for Beginners', description: 'An excellent paid course for beginners with many videos and examples.', link: 'https://www.udemy.com/course/korean-for-beginners/', price: 'paid', type: 'hl', level: 'beginner' },
+            { title: 'Pimsleur Korean Level 1', description: 'An excellent audio course to focus on speaking and listening.', link: 'https://www.pimsleur.com/learn-korean', price: 'paid', type: 'hl', level: 'beginner' },
+            
+            // Chinese Courses
+            { title: 'ChineseClass101 – Absolute Beginner', description: 'Audio and video lessons for beginners with basic vocabulary and grammar.', link: 'https://www.chineseclass101.com/index.php?cat=absolute-beginner', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Duolingo Chinese Course', description: 'Learn Chinese in a fun and interactive way for beginners.', link: 'https://www.duolingo.com/course/zh/en/Learn-Chinese', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Coursera – Chinese Intermediate', description: 'A good intermediate course covering speaking and reading skills.', link: 'https://www.coursera.org/learn/learn-chinese', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'edX – Mandarin Chinese Advanced', description: 'An advanced university-level course in Chinese with intensive exercises.', link: 'https://www.edx.org/course/mandarin-chinese-level-3-advanced', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Rosetta Stone Chinese', description: 'A comprehensive interactive learning program to learn Chinese from scratch.', link: 'https://www.rosettastone.com/learn-chinese/', price: 'paid', type: 'hl', level: 'beginner' },
+            { title: 'Udemy – Chinese for Beginners', description: 'An excellent course for beginners with clear videos and explanations.', link: 'https://www.udemy.com/course/chinese-for-beginners/', price: 'paid', type: 'hl', level: 'beginner' },
+            
+            // Japanese Courses
+            { title: 'JapanesePod101 – Absolute Beginner', description: 'Audio and video lessons for beginners with language and pronunciation basics.', link: 'https://www.japanesepod101.com/index.php?cat=absolute-beginner', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'JapanesePod101 Premium Membership', description: 'Paid subscription giving you exclusive content and diverse learning materials.', link: 'https://www.japanesepod101.com/store/premium-membership', price: 'paid', type: 'hl', level: 'intermediate' },
+            { title: 'Udemy – Advanced Japanese Course', description: 'An integrated course to fully develop advanced Japanese language skills.', link: 'https://www.udemy.com/course/advanced-japanese/', price: 'paid', type: 'hl', level: 'advanced' },
+            { title: 'Pimsleur Japanese Level 3', description: 'An advanced audio course to improve fluency.', link: 'https://www.pimsleur.com/learn-japanese', price: 'paid', type: 'hl', level: 'advanced' },
+
+            // Additional Human Language Courses (Egypt Focus)
+            { title: 'Aldiwan Arabic Language Center', description: 'Arabic language center for non-native speakers in Egypt.', link: 'https://en.wikipedia.org/wiki/Aldiwan_Arabic_Language_Center', price: 'paid', type: 'hl', level: 'intermediate' },
+            { title: 'Al-Azhar English Training Centre', description: 'English training center affiliated with Al-Azhar University.', link: 'https://en.wikipedia.org/wiki/Al-Azhar_English_Training_Centre', price: 'paid', type: 'hl', level: 'intermediate' },
+            { title: 'Confucius Institute – Pharos University', description: 'Chinese language and culture courses in Alexandria.', link: 'https://www.pua.edu.eg/continuing-education/confucius/courses/', price: 'paid', type: 'hl', level: 'beginner' },
+            { title: 'French University of Egypt (UFE)', description: 'Applied Languages faculty offering degree programs.', link: 'https://ugad.ejust.edu.eg/', price: 'paid', type: 'hl', level: 'advanced' },
+            { title: 'Egyptian Government Annual Grants', description: 'Scholarships for foreign students to study in Egypt.', link: 'https://alexu.edu.eg/images/foreign/English.pdf', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Edraak - Free Arabic MOOCs', description: 'An open online course platform with courses in Arabic.', link: 'https://en.wikipedia.org/wiki/Edraak', price: 'free', type: 'hl', level: 'intermediate' },
+
+            // Additional English Courses
+            { title: 'Coursera - English for Beginners', description: 'An excellent course for beginners covering the basics.', link: 'https://www.coursera.org/learn/english-for-beginners', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'British Council - Learn English: Elementary', description: 'A simple and free course to build a strong foundation.', link: 'https://www.futurelearn.com/courses/learn-english-elementary', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'edX - English Grammar and Punctuation', description: 'Focus on the rules of grammar and punctuation.', link: 'https://www.edx.org/learn/english/university-of-california-berkeley-english-grammar-and-punctuation', price: 'free', type: 'hl', level: 'beginner' },
+            { title: 'Coursera - English for Business', description: 'Focus on English in a business context.', link: 'https://www.coursera.org/learn/business-english', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'edX - IELTS Preparation Course', description: 'Prepare for the IELTS academic test.', link: 'https://www.edx.org/learn/ielts/university-of-queensland-ielts-academic-test-preparation', price: 'free', type: 'hl', level: 'intermediate' },
+            { title: 'Coursera - English for Career Development', description: 'Use English in your job search.', link: 'https://www.coursera.org/learn/career-development', price: 'free', type: 'hl', level: 'advanced' },
+            { title: 'Udemy - English for All', description: 'A comprehensive course starting from scratch.', link: 'https://www.udemy.com/course/english-for-all-learn-english-from-beginner-to-advanced/', price: 'paid', priceDisplay: 'Varies', type: 'hl', level: 'beginner' },
+            { title: 'Skillshare - Speak English with Confidence', description: 'Focuses on developing speaking skills.', link: 'https://www.skillshare.com/classes/Speak-English-with-Confidence-An-Introductory-Course-to-English-Speaking/163098553', price: 'paid', priceDisplay: 'Subscription', type: 'hl', level: 'beginner' },
+            
+            // Programming and Tech Fields
+            { title: 'Codecademy', description: 'An online interactive platform that offers free coding classes.', link: 'https://www.codecademy.com/', price: 'paid', priceDisplay: 'Subscription', type: 'pl', level: 'beginner' },
+            { title: 'Google/Harvard/MIT Free Coding Courses', description: 'Top-tier universities offering free coding courses for 2025.', link: 'https://timesofindia.indiatimes.com/education/news/google-harvard-mit-are-offering-free-coding-courses-in-2025-here-are-10-you-can-start-now/articleshow/122433841.cms', price: 'free', type: 'pl', level: 'intermediate' },
+            { title: 'Coursera - Programming Languages', description: 'A wide range of programming language courses from universities.', link: 'https://www.coursera.org/courses?query=programming+languages', price: 'free', type: 'pl', level: 'intermediate' },
+            { title: 'Exercism', description: 'Free coding practice and mentorship for 77 programming languages.', link: 'https://en.wikipedia.org/wiki/Exercism', price: 'free', type: 'pl', level: 'intermediate' },
+            { title: 'Saylor Academy - Free CS Courses', description: 'Offers free and open online courses for all who want to learn.', link: 'https://en.wikipedia.org/wiki/Saylor_Academy', price: 'free', type: 'pl', level: 'beginner' },
+            { title: 'IBM SkillsBuild', description: 'Digital and communication skills, including AI, Cyber, and Data.', link: 'https://en.wikipedia.org/wiki/IBM_SkillsBuild', price: 'free', type: 'field', level: 'intermediate' },
+            { title: 'FreeCodeCamp', description: 'Learn web development with certifications (HTML, CSS, JS, React).', link: 'https://www.freecodecamp.org/', price: 'free', type: 'field', level: 'beginner' },
+            { title: 'Great Learning - Web Development', description: 'Free courses to develop web design and programming skills with certificates.', link: 'https://www.mygreatlearning.com/web-development/free-courses', price: 'free', type: 'field', level: 'beginner' },
+            { title: 'Coursera - Meta Front-End Developer', description: 'Professional certificate program by Meta for front-end development.', link: 'https://www.coursera.org/professional-certificates/meta-front-end-developer', price: 'paid', priceDisplay: 'Subscription', type: 'field', level: 'intermediate' },
+            { title: 'Alison - Digital Art & Graphics', description: 'Free courses in graphic design and digital art with completion certificates.', link: 'https://alison.com/tag/digital-art', price: 'free', type: 'field', level: 'beginner' },
+            { title: 'Ctrl+Paint - Digital Drawing', description: 'A free resource for learning the fundamentals of digital painting.', link: 'https://www.ctrlpaint.com/', price: 'free', type: 'field', level: 'beginner' },
+            { title: 'Cisco Networking Academy', description: 'Offers free courses on the basics of networking with certification available.', link: 'https://www.cisco.com/c/en/us/training-events/networking-academy.html', price: 'free', type: 'field', level: 'beginner' },
+            { title: 'Great Learning - Networking', description: 'Free courses covering TCP/IP, OSI, and routing with a free certificate.', link: 'https://www.mygreatlearning.com/networking-courses/free-courses', price: 'free', type: 'field', level: 'intermediate' }
+        ];
+
+        // --- SCRIPT LOGIC ---
+        const courseGrid = document.getElementById('course-grid');
+        const filterContainer = document.getElementById('filters');
+        let activeFilters = { price: null, type: null, level: null };
+
+        const renderCourses = () => {
+            courseGrid.innerHTML = '';
+            const filteredCourses = courses.filter(course => {
+                const priceMatch = !activeFilters.price || course.price === activeFilters.price;
+                const typeMatch = !activeFilters.type || course.type === activeFilters.type;
+                const levelMatch = !activeFilters.level || course.level === activeFilters.level;
+                return priceMatch && typeMatch && levelMatch;
+            });
+
+            if (filteredCourses.length === 0) {
+                courseGrid.innerHTML = `<p class="col-span-full text-center text-gray-400 text-xl">No courses match the selected filters.</p>`;
+            } else {
+                filteredCourses.forEach(course => {
+                    const card = document.createElement('div');
+                    card.className = 'course-card rounded-lg p-6 flex flex-col';
+                    const priceInfo = course.price === 'free' 
+                        ? `<span class="text-lg font-semibold text-green-400">Free</span>` 
+                        : `<span class="text-lg font-semibold text-amber-400">${course.priceDisplay || 'Paid'}</span>`;
+                    card.innerHTML = `
+                        <h2 class="text-xl font-bold mb-2 text-yellow-300">${course.title}</h2>
+                        <p class="text-gray-400 flex-grow mb-4">${course.description}</p>
+                        <div class="mt-auto flex justify-between items-center pt-4 border-t border-slate-700">
+                            ${priceInfo}
+                            <a href="${course.link}" target="_blank" rel="noopener noreferrer" class="inline-block text-center font-semibold bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition-colors">
+                                Go to Course
+                            </a>
+                        </div>
+                    `;
+                    courseGrid.appendChild(card);
+                });
+            }
+        };
+
+        filterContainer.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') return;
+            const button = e.target;
+            const filterGroup = button.dataset.filterGroup;
+            const filterValue = button.dataset.filter;
+            const allButton = filterContainer.querySelector('[data-filter="all"]');
+
+            if (filterGroup === 'all') {
+                activeFilters = { price: null, type: null, level: null };
+                filterContainer.querySelectorAll('.filter-btn.active').forEach(btn => btn.classList.remove('active'));
+                allButton.classList.add('active');
+            } else {
+                allButton.classList.remove('active');
+                const buttonsInGroup = filterContainer.querySelectorAll(`.filter-btn[data-filter-group="${filterGroup}"]`);
+                // Deactivate other buttons in the same group
+                if (!button.classList.contains('active')) {
+                   buttonsInGroup.forEach(btn => btn.classList.remove('active'));
+                }
+
+                if (activeFilters[filterGroup] === filterValue) {
+                    // If clicking the same active button, deactivate it
+                    activeFilters[filterGroup] = null;
+                    button.classList.remove('active');
+                } else {
+                    // Activate the new button
+                    button.classList.add('active');
+                    activeFilters[filterGroup] = filterValue;
+                }
+                
+                if (Object.values(activeFilters).every(val => val === null)) {
+                    allButton.classList.add('active');
+                }
+            }
+            renderCourses();
+        });
+        
+        // Initial render of all courses
+        document.addEventListener('DOMContentLoaded', renderCourses);
+    </script>
+
+    <script src="homepage.js" defer></script>
+</body>
+</html>
+
